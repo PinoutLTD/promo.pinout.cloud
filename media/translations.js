@@ -1,6 +1,6 @@
 window.PINOUT_TRANSLATIONS = {
   en: {
-    title_main: "Enhance Your Smart Home Test",
+    title_main: "Enhance Your Smart Home",
     intro: "Congratulations! You already have a smart home with various nice features. We hope you are already showering in preheated warm water and at the same time are not overpaying electricity bills due to a boiler left running. We have more smart ideas for your home — just take a look:",
     remote_title: "Remote Access Setup",
     remote_desc: "Keep in touch with your smart home even miles away! We'll assist the setup for free.",
