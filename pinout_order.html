@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Pinout Shop — Smart Home</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: rgba(0,0,0,0.4);
+      --bg-card: #252525;
+      --text: #e0e0e0;
+      --text-muted: #999;
+      --accent: #212121;
+      --radius: 12px;
+      --transp-light: rgba(255,255,255,0.2);
+      --transp-dark: rgba(0,0,0,0.3);
+    }
+    body {
+      margin: 0;
+      padding: 32px 80px 32px 32px;
+      font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: rgba(255, 255, 255, 0) !important;
+      /* background: var(--bg) center / cover no-repeat fixed url("https://cdn.jsdelivr.net/gh/basnijholt/lovelace-ios-themes@a37376d918fcfe4785be99910dc9a7200ac37da9/themes/homekit-bg-blue-red.jpg"); */
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    button {
+        border: 0;
+        outline: 0;
+        color: #fff;
+    }
+    .main { flex: 1; }
+    .footer { margin-top: 32px; }
+
+    .main, .footer {
+        max-width: 1040px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    h1 { font-size: 30px; }
+    h2 { font-size: 25px; }
+    h3 { font-size: 20px; }
+    p { margin: 0; }
+    p:not(:last-child) { margin-bottom: 5px; }
+
+    img, video {
+        display: block;
+        max-width: 100%;
+    }
+
+    .rounded, video {
+        border-radius: var(--radius);
+    }
+
+    .curtains-video-wrapper {
+      position: relative;
+      min-height: 200px;
+    }
+    .curtains-media-item {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .curtains-media-item.curtains-media-visible {
+      position: relative;
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .curtains-playing-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      width: 20px;
+      height: 20px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .curtains-playing-indicator.visible {
+      opacity: 1;
+      animation: curtains-blink 1s ease-in-out infinite;
+    }
+    @keyframes curtains-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    section:not(:last-child) {
+      margin-bottom: 32px;
+    }
+
+    article:not(:last-child) {
+      margin-bottom: 50px;
+    }
+
+    .footer {
+      margin-top: 32px;
+    }
+
+    .text-big {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .title {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      margin-bottom: 12px;
+    }
+    .title:not(:last-child) {
+      margin-bottom: 16px;
+    }
+    .title .title-text {
+      margin: 0 !important;
+    }
+    .title .title-text > * {
+      margin: 0 0 5px;
+    }
+    .title-controls {
+      margin-top: 5px;
+    }
+    .lang-switcher {
+      display: flex;
+      gap: 4px;
+    }
+    .lang-switcher button {
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      background: var(--transp-light);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .lang-switcher button.active {
+      background: var(--transp-dark);
+      color: #fff;
+    }
+    .title-tiny {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .button, .button-2 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #a61efa 0%, #76fba2 100%);
+      color: white;
+      border-radius: 25px;
+      padding: 12px;
+      text-shadow: 0 2px 4px var(--transp-dark);
+      text-transform: uppercase;
+      min-width: 200px;
+      line-height: 1;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .button-2 {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .section-bg {
+      container-type: inline-size;
+      container-name: section;
+      background-color: var(--transp-light);
+      border-radius: var(--radius);
+      padding: 20px;
+      color: #fff;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+
+    .image {
+      border-radius: var(--radius);
+      width: 165px;
+      height: 120px;
+      overflow: hidden;
+    }
+
+    .card-image {
+      display: grid;
+      grid-template-columns: 165px auto;
+      gap: 16px;
+    }
+
+    .card-image:not(:last-child) {
+      margin-bottom: 16px;
+    }
+
+    .card-image .text {
+      font-size: 14px;
+    }
+
+
+    @container section (max-width: 600px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @container section (max-width: 390px) {
+      .card-image {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .app-card {
+        margin: 12px 0;
+    }
+
+    .app-card, .app-button {
+        background-color: var(--transp-dark);
+        border-radius: var(--radius);
+        padding: 12px;
+    }
+
+    .flex-line {
+        display: flex;
+        gap: 12px;
+    }
+    .flex-line-equal {
+        display: flex;
+        gap: 12px;
+    }
+    .flex-line-equal .app-button {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+    .flex-line-equal .app-button img {
+        max-width: 60px;
+        margin: 0 auto;
+    }
+
+    .curtains-card-controls {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        margin-top: 12px;
+    }
+    .curtains-card-controls .app-button {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    .curtains-card-controls .app-button img {
+        width: 18px;
+        height: 18px;
+        object-fit: contain;
+    }
+    .app-button {
+        background-color: var(--transp-light);
+        font-weight: bold;
+    }
+
+
+    .curtains-card-title {
+        font-weight: bold;
+    }
+
+    .curtains-card-status {
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .curtains-scenes {
+        height: 90%;
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+    }
+
+    .curtains-scenes .app-button img {
+        max-width: 30px;
+        margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="main">
+    <article>
+      <div class="title">
+        <h1 class="title-text" data-i18n="title_main">Enhance Your Smart Home</h1>
+        <div class="title-controls">
+          <div class="lang-switcher">
+            <button type="button" data-lang="en" title="English">EN</button>
+            <button type="button" data-lang="gr" title="Ελληνικά">GR</button>
+            <button type="button" data-lang="ru" title="Русский">RU</button>
+          </div>
+        </div>
+      </div>
+      <p class="text-big" data-i18n="intro">Congratulations! You already have a smart home with various nice features. We hope you are already showering in preheated warm water and at the same time are not overpaying electricity bills due to a boiler left running. We have more smart ideas for your home — just take a look:</p>
+    </article>
+
+    <article>
+      <div class="title">
+        <div class="title-text">
+          <h2 data-i18n="remote_title">Remote Access Setup</h2>
+          <p data-i18n="remote_desc">Keep in touch with your smart home even miles away! We'll assist the setup for free.</p>
+        </div>
+        <div class="title-controls">
+          <button class="button pinout-order-btn" data-product-id="47" data-i18n="free">Free</button>
+        </div>
+      </div>
+      
+      <div class="section-bg">
+        <div class="grid-2">
+          <div class="card-image">
+            <div class="image">
+              <img alt="Remote Access" src="/local/pinout/html/media/remote_1.webp" />
+            </div>
+            <div>
+              <p><b data-i18n="remote_anytime">- Any Time, Anywhere</b></p>
+              <p class="text" data-i18n="remote_anytime_desc">Get notifications, watch sensor's data, control climate</p>
+            </div>
+          </div>
+          <div class="card-image">
+            <div class="image">
+              <img alt="Remote Access" src="/local/pinout/html/media/remote_2.webp" />
+            </div>
+            <div>
+              <p><b data-i18n="remote_boiler">- Sure to turn off the boiler</b></p>
+              <p class="text" data-i18n="remote_boiler_desc">No more worries with remote turn and off options</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article>
+        <div class="title">
+          <div class="title-text">
+            <h2 data-i18n="curtains_title">Smart Curtains</h2>
+            <p data-i18n="curtains_desc">Upgrade your blackout curtains to be integrated in smart home system</p>
+          </div>
+          <div class="title-controls">
+            <button class="button-2 pinout-order-btn" data-product-id="43" data-i18n="order_now">Order now</button>
+          </div>
+        </div>
+        <div class="section-bg">
+          <div class="grid-2">
+            <div>
+              <p class="title-tiny"><b data-i18n="sneak_peek">Sneak-peek at your smart home app</b></p>
+              <div class="curtains-card app-card">
+                <div class="curtains-card-head">
+                    <div>
+                      <div class="curtains-card-title" data-i18n="bedroom_curtains">Bedroom curtains</div>
+                      <div class="curtains-card-status" data-i18n="closed">Closed</div>
+                    </div>
+                </div>
+                <div class="curtains-card-controls">
+                    <button class="app-button" data-curtains-action="open"><img alt="Open" src="/local/pinout/html/media/curtains.svg"><span data-i18n="open">open</span></button>
+                    <button class="app-button" data-curtains-action="close"><img alt="Close" src="/local/pinout/html/media/curtains_closed.svg"><span data-i18n="close">close</span></button>
+                </div>
+              </div>
+              <div class="curtains-video-wrapper" id="curtains-display">
+                <img id="curtains-img-opened" class="curtains-media-item rounded" alt="" src="/local/pinout/html/media/curtains_opened.webp">
+                <img id="curtains-img-closed" class="curtains-media-item curtains-media-visible rounded" alt="" src="/local/pinout/html/media/curtains_closed.webp">
+                <video id="curtains-video-open" class="curtains-media-item" muted playsinline preload="auto">
+                  <source src="/local/pinout/html/media/curtains_open.mp4" type="video/mp4">
+                </video>
+                <video id="curtains-video-close" class="curtains-media-item" muted playsinline preload="auto">
+                  <source src="/local/pinout/html/media/curtains_close.mp4" type="video/mp4">
+                </video>
+                <img id="curtains-playing-indicator" class="curtains-playing-indicator" alt="" src="/local/pinout/html/media/signal-variant.svg" aria-hidden="true">
+              </div>
+            </div>
+            <div>
+              <p class="title-tiny"><b data-i18n="new_automations">New automations available</b></p>
+              <div class="curtains-scenes">
+                <section class="grid-2">
+                    <button class="app-button" data-curtains-action="open"><img alt="Phone Alarm" src="/local/pinout/html/media/cellphone-sound.svg"><span data-i18n="phone_alarm"> Phone Alarm On</span></button>
+                    <p data-i18n="phone_alarm_desc">Open curtains automatically when the phone alarm goes off</p>
+                  </section>
+                  <section class="grid-2">
+                    <button class="app-button" data-curtains-action="close"><img alt="Movie" src="/local/pinout/html/media/theater.svg"><span data-i18n="movie_time"> Movie Time</span></button>
+                    <p data-i18n="movie_time_desc">Close curtains as part of the Movie Night scenario</p>
+                  </section>
+                  <section class="grid-2">
+                    <button class="app-button" data-curtains-action="close"><img alt="Privacy" src="/local/pinout/html/media/dance-ballroom.svg"><span data-i18n="auto_privacy"> Auto Privacy</span></button>
+                    <p data-i18n="auto_privacy_desc">Close curtains after sunset to enhance privacy</p>
+                  </section>
+              </div>
+            </div>
+          </div>
+        </div>
+    </article>
+
+    <article>
+      <div class="title">
+        <div class="title-text">
+          <h2 data-i18n="voice_title">Voice Assistant</h2>
+          <p data-i18n="voice_desc">Integrate Amazon Alexa, Google, Yandex Alice etc. to control your smart home hands-free.</p>
+        </div>
+        <div class="title-controls">
+          <button class="button-2 pinout-order-btn" data-product-id="42" data-i18n="order_now">Order now</button>
+        </div>
+      </div>
+      <div class="section-bg">
+        <div class="grid-2">
+          <div>
+            <p class="title-tiny"><b data-i18n="explore_features">Explore new features</b></p>
+            <div class="card-image">
+              <div class="image">
+                <img alt="Alexa" src="/local/pinout/html/media/voice_dimming.webp" />
+              </div>
+              <div>
+                <p><b data-i18n="alexa_dim">- Alexa, dim lights to 50%</b></p>
+                <p class="text" data-i18n="alexa_dim_desc">Control lights, curtains, climate devices and more at no effort</p>
+              </div>
+            </div>
+            <div class="card-image">
+              <div class="image">
+                <img alt="Google I'm home" src="/local/pinout/html/media/im_home.webp" />
+              </div>
+              <div>
+                <p><b data-i18n="google_home">- Google, I'm home</b></p>
+                <p class="text" data-i18n="google_home_desc">Use personal scenarios to enlight daily routine</p>
+              </div>
+            </div>
+            <div class="card-image">
+              <div class="image">
+                <img alt="CarPlay" src="/local/pinout/html/media/carplay.webp" />
+              </div>
+              <div>
+                <p><b data-i18n="siri_boiler">- Siri, I'm driving home, turn on the boiler</b></p>
+                <p class="text" data-i18n="siri_boiler_desc">Use Apple Carplay/Android Auto to control your smart home when away</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="title-tiny"><b data-i18n="supported_platforms">Supported platforms</b></p>
+            <section>
+              <img alt="Alexa, Google, Siri, Alisa" src="/local/pinout/html/media/voice-assistant.webp" />
+            </section>
+            <section>
+              <video loop autoplay muted playsinline preload="auto">
+                <source src="/local/pinout/html/media/voice.mp4" type="video/mp4">
+              </video>
+            </section>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article>
+        <div class="title">
+            <div class="title-text">
+            <h2 data-i18n="vacuum_title">Robot Vacuum</h2>
+            <p data-i18n="vacuum_desc">Delegate the chores! Make robot deal with the dust and control it with a fancy interface.</p>
+            </div>
+            <div class="title-controls">
+            <button class="button-2 pinout-order-btn" data-product-id="44" data-i18n="order_now">Order now</button>
+            </div>
+        </div>
+        <div class="section-bg">
+            <div class="grid-2">
+            <div>
+                <p class="title-tiny"><b data-i18n="sneak_peek">Sneak-peek at your smart home app</b></p>
+                <img alt="Robot vacuum smart home card" src="/local/pinout/html/media/vacuum_card.png" class="rounded" />
+            </div>
+            <div>
+                <p class="title-tiny"><b>Vacuum-related features</b></p>
+                <section class="flex-line-equal">
+                    <button class="app-button"><img alt="Kitchen" src="/local/pinout/html/media/countertop-outline.svg"><span data-i18n="clean_kitchen"> Clean Kitchen</span></button>
+                    <button class="app-button"><img alt="Living room" src="/local/pinout/html/media/sofa-outline.svg"><span data-i18n="clean_living"> Clean Living room</span></button>
+                    <button class="app-button"><img alt="Kids' room" src="/local/pinout/html/media/teddy-bear.svg"><span data-i18n="clean_kids"> Clean Kids' room</span></button>
+                </section>
+                <section>
+                    <p><b data-i18n="presence_schedule">- Presence-based schedule</b></p>
+                    <p data-i18n="presence_schedule_desc">Only start the cleaning when you're not home, why listen to robot noises?</p>
+                </section>
+                <section>
+                    <p><b data-i18n="choose_zones">- Choose Zones to Clean</b></p>
+                    <p data-i18n="choose_zones_desc">Only send the robot where it need to go, choose zones and timings for a perfect clean-up</p>
+                </section>
+            </div>
+            </div>
+        </div>
+    </article>
+
+  </main>
+
+  <footer class="footer">
+    © Pinout LTD <span id="year"></span>
+  </footer>
+
+  <script src="/local/pinout/html/media/translations.js"></script>
+  <script>
+    (function () {
+      const LANG_KEY = 'pinout_lang';
+      const translations = window.PINOUT_TRANSLATIONS || { en: {}, gr: {}, ru: {} };
+      function getLang() {
+        return localStorage.getItem(LANG_KEY) || new URLSearchParams(window.location.search).get('lang') || 'en';
+      }
+      function setLang(lang) {
+        localStorage.setItem(LANG_KEY, lang);
+        document.documentElement.lang = lang === 'gr' ? 'el' : lang;
+        document.querySelectorAll('.lang-switcher button').forEach(function (btn) {
+          btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+        });
+        document.querySelectorAll('[data-i18n]').forEach(function (el) {
+          var key = el.getAttribute('data-i18n');
+          var t = translations[lang] && translations[lang][key];
+          if (!t) return;
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = t;
+          else if (el.tagName === 'IMG') el.alt = t;
+          else el.textContent = t;
+        });
+      }
+      document.querySelectorAll('.lang-switcher button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setLang(btn.getAttribute('data-lang'));
+        });
+      });
+      setLang(getLang());
+
+      const params = new URLSearchParams(window.location.search);
+      const flat = params.get('flat') || 'unknown';
+      const flatEl = document.getElementById('flat-value');
+      if (flatEl) flatEl.textContent = flat;
+
+      const yearEl = document.getElementById('year');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+      window.PINOUT_FLAT = flat;
+
+      (function curtainsDisplay() {
+        const imgOpened = document.getElementById('curtains-img-opened');
+        const imgClosed = document.getElementById('curtains-img-closed');
+        const videoOpen = document.getElementById('curtains-video-open');
+        const videoClose = document.getElementById('curtains-video-close');
+        const statusEl = document.querySelector('.curtains-card-status');
+        const playingIndicator = document.getElementById('curtains-playing-indicator');
+
+        function show(el) { el.classList.add('curtains-media-visible'); }
+        function hide(el) { el.classList.remove('curtains-media-visible'); }
+
+        function setStatus(key) {
+          var t = translations[getLang()] && translations[getLang()][key];
+          if (statusEl && t) statusEl.textContent = t;
+        }
+
+        function showPlayingIndicator() {
+          if (playingIndicator) playingIndicator.classList.add('visible');
+        }
+        function hidePlayingIndicator() {
+          if (playingIndicator) playingIndicator.classList.remove('visible');
+        }
+
+        document.addEventListener('click', function (e) {
+          const btn = e.target.closest('[data-curtains-action]');
+          if (!btn) return;
+          const action = btn.getAttribute('data-curtains-action');
+          if (action !== 'open' && action !== 'close') return;
+          if (!imgOpened || !imgClosed || !videoOpen || !videoClose) return;
+
+          videoOpen.onended = null;
+          videoClose.onended = null;
+          videoOpen.pause();
+          videoClose.pause();
+          hidePlayingIndicator();
+
+          [imgOpened, imgClosed, videoOpen, videoClose].forEach(hide);
+
+          if (action === 'open') {
+            show(videoOpen);
+            videoOpen.currentTime = 0;
+            videoOpen.play();
+            showPlayingIndicator();
+            videoOpen.onended = function () {
+              videoOpen.onended = null;
+              hidePlayingIndicator();
+              hide(videoOpen);
+              show(imgOpened);
+              setStatus('open_status');
+            };
+          } else {
+            show(videoClose);
+            videoClose.currentTime = 0;
+            videoClose.play();
+            showPlayingIndicator();
+            videoClose.onended = function () {
+              videoClose.onended = null;
+              hidePlayingIndicator();
+              hide(videoClose);
+              show(imgClosed);
+              setStatus('closed');
+            };
+          }
+        });
+      })();
+
+      (function pinoutOrder() {
+        const params = new URLSearchParams(window.location.search);
+        const haToken = params.get('ha_token');
+        const firstname = params.get('flat') || params.get('flat_no_url') || 'unknown';
+        const inIframe = window !== window.parent;
+        const STORAGE_KEY = 'pinout_orders_' + firstname;
+
+        function getOrders() {
+          try {
+            var s = localStorage.getItem(STORAGE_KEY);
+            return s ? JSON.parse(s) : {};
+          } catch (e) { return {}; }
+        }
+        function saveOrder(productId, orderId) {
+          var o = getOrders();
+          o[String(productId)] = String(orderId || '');
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(o));
+        }
+        function getOrderSentText(orderId) {
+          var t = translations[getLang()] && translations[getLang()].order_sent_with_id;
+          t = t || 'Your order #%s sent';
+          return t.replace('%s', orderId || '');
+        }
+        function getRequestSentText() {
+          var t = translations[getLang()] && translations[getLang()].request_sent;
+          return t || 'Request sent';
+        }
+        function replaceBtnWithOrderSent(btn, orderId) {
+          var span = document.createElement('span');
+          span.className = 'pinout-order-sent';
+          span.style.cssText = 'font-weight:bold;opacity:0.9;';
+          span.textContent = orderId ? getOrderSentText(orderId) : getRequestSentText();
+          btn.parentNode.replaceChild(span, btn);
+        }
+        function applyStoredOrders() {
+          var orders = getOrders();
+          document.querySelectorAll('.pinout-order-btn').forEach(function (btn) {
+            var pid = btn.getAttribute('data-product-id') || '42';
+            if (orders[pid]) replaceBtnWithOrderSent(btn, orders[pid]);
+          });
+        }
+
+        applyStoredOrders();
+
+        function doOrder(productId, btn, origText) {
+          if (inIframe) {
+            var requestId = 'r' + Date.now() + Math.random().toString(36).slice(2);
+            var handler = function (ev) {
+              if (ev.data?.type !== 'pinout_order_response' || ev.data?.requestId !== requestId) return;
+              window.removeEventListener('message', handler);
+              if (ev.data.ok) {
+                saveOrder(productId, ev.data.order_id);
+                replaceBtnWithOrderSent(btn, ev.data.order_id);
+              } else {
+                btn.disabled = false;
+                btn.textContent = origText;
+              }
+            };
+            window.addEventListener('message', handler);
+            window.parent.postMessage({ type: 'pinout_order', product_id: String(productId), firstname: firstname, requestId: requestId }, '*');
+            return;
+          }
+          var headers = { 'Content-Type': 'application/json' };
+          if (haToken) headers['Authorization'] = 'Bearer ' + haToken;
+          fetch('/api/pinout_order', {
+            method: 'POST', headers: headers, credentials: 'same-origin',
+            body: JSON.stringify({ product_id: String(productId), firstname: firstname })
+          }).then(function (r) {
+            if (r.ok) {
+              r.json().then(function (d) {
+                saveOrder(productId, d && d.order_id);
+                replaceBtnWithOrderSent(btn, d && d.order_id);
+              }).catch(function () {
+                saveOrder(productId, null);
+                replaceBtnWithOrderSent(btn, null);
+              });
+            } else {
+              btn.disabled = false;
+              btn.textContent = origText;
+            }
+          }).catch(function () { btn.disabled = false; btn.textContent = origText; });
+        }
+
+        document.querySelectorAll('.pinout-order-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            if (btn.disabled) return;
+            var productId = btn.getAttribute('data-product-id') || '42';
+            var origText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '...';
+            doOrder(productId, btn, origText);
+          });
+        });
+      })();
+    })();
+  </script>
+</body>
+</html>
